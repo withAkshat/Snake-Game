@@ -55,6 +55,7 @@ section .game .board {
 section .game .board .block {
   flex-wrap: nowrap;
   border: 1px solid var(--text-primary-color);
+  border: none;
 }
 
 .red {
@@ -97,8 +98,10 @@ button:hover {
 
 .modal .start-game,
 .modal .end-game {
+  height: 100%;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
   gap: 1rem;
 }

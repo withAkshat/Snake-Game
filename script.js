@@ -2,9 +2,21 @@
 const board = document.querySelector(".board");
 const blockHeight = 30;
 const blockWidht = 30;
-
 const blocksWidht = Math.floor(board.clientWidth / blockWidht);
 const blocksHeight = Math.floor(board.clientHeight / blockHeight);
+const modal = document.querySelector(".modal");
+const startGame = document.querySelector(".start-game");
+const endGame = document.querySelector(".end-game");
+const startBtn = document.querySelector(".btn-start");
+const restartBtn = document.querySelector(".btn-restart");
+let score = document.querySelector("#score");
+let highScoreElement = document.querySelector("#highScore");
+let highScore = 0;
+let finalScore = document.querySelector("#final-score");
+let points = 0;
+let intervalId = null;
+let time = `0-0`;
+let timer = document.querySelector("#time");
 
 const blocks = [];
 let food = {
@@ -22,7 +34,7 @@ for (let i = 0; i < blocksHeight; i++) {
     }
 }
 
-const snake = [
+let snake = [
     { x: 1, y: 3 },
     { x: 1, y: 4 },
     { x: 1, y: 5 }
@@ -32,12 +44,10 @@ let direction = "ArrowRight";
 
 addEventListener("keydown", (e) => {
     direction = e.key;
-
 })
 
 
-const startGame = document.querySelector(".start-game");
-const endGame = document.querySelector(".end-game");
+
 
 function render() {
 
@@ -46,7 +56,8 @@ function render() {
     }
     )()
 
-
+    highScore = Number(localStorage.getItem("highscore") || 0);
+    highScoreElement.innerHTML = highScore;
 
     let head = null;
     if (direction === "ArrowLeft") {
@@ -72,9 +83,15 @@ function render() {
 
         // alert("gameOver")
         startGame.style.display = "none";
+        modal.style.display = "block";
         endGame.style.display = "flex";
         clearInterval(intervalId);
-        return
+        finalScore.innerHTML = points;
+
+          if(points > highScore){
+            localStorage.setItem("highscore", points.toString());
+        }
+        return;
     }
 
     snake.forEach(segment => {
@@ -82,7 +99,7 @@ function render() {
     })
 
 
-    if (head.x == food.x && head.y == food.y) {
+    if(head.x == food.x && head.y == food.y) {
         blocks[`${food.x}-${food.y}`].classList.remove("food");
 
         food = {
@@ -90,24 +107,70 @@ function render() {
             y: Math.floor(Math.random() * blocksWidht)
         }
         blocks[`${food.x}-${food.y}`].classList.add("food");
+        
+        // score updation
+        points += 10;
+        score.innerHTML = points;
+      
+
 
         snake.unshift(head);
     }
 
 }
 
-let intervalId = null;
 
+function restartGame() {
 
+    blocks[`${food.x}-${food.y}`].classList.remove("food");
+    
+    snake = [
+        { x: 1, y: 3 },
+    ]
+    
+    points = 0;
+    score.innerHTML = 0;
+    time = `00-00`;
 
-let startBtn = document.querySelector(".btn-start");
-let modal = document.querySelector(".modal");
+    snake.forEach(segment => {
+        blocks[`${segment.x}-${segment.y}`].classList.remove("red");
+    })
+
+    direction = "ArrowDown";
+
+    food = {
+        x: Math.floor(Math.random() * blocksHeight),
+        y: Math.floor(Math.random() * blocksWidht)
+    }
+
+    modal.style.display = "none";
+    intervalId = setInterval(function(){
+        render();
+    }, 100)
+}
+
+restartBtn.addEventListener("click", restartGame);
+
+let timeIntervalId = null;
 
 startBtn.addEventListener("click", () => {
     modal.style.display = "none";
     intervalId = setInterval(function () {
-        render()
+        render();
     }, 100)
 
+    timeIntervalId = setInterval(function(){
+        let [min, sec] = time.split("-").map(Number);
+
+        if( sec == 59) {
+            min +=1;
+            sec = 0;
+        }else{
+            sec += 1;
+        }
+        time = `${min}-${sec}`;
+        timer.innerHTML = time;
+    }, 1000)
 })
+
 
